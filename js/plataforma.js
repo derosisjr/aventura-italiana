@@ -546,20 +546,36 @@ window.Plataforma = (function () {
   }
 
   function desenharPersonagens() {
+    const asa = Math.floor(tempo / 160) % 2;
     for (const i of inimigos) {
       if (!i.vivo) continue;
       const x = i.x - camX;
       if (x < -40 || x > canvas.width + 40) continue;
-      if (i.tipo === "pombo") ctx.drawImage(i.vx > 0 ? Sprites.pombo.dir : Sprites.pombo.esq, x, i.y);
-      else Sprites.bola(ctx, x + i.w / 2, i.y + i.h / 2);
+      if (i.tipo === "pombo") {
+        ctx.fillStyle = "rgba(0,0,0,.18)";
+        ctx.beginPath(); ctx.ellipse(x + i.w / 2, i.y + i.h + 2, 10, 3, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.drawImage((i.vx > 0 ? Sprites.pombo.dir : Sprites.pombo.esq)[asa], x, i.y);
+      } else {
+        Sprites.bola(ctx, x + i.w / 2, i.y + i.h / 2);
+      }
     }
 
     const j = jogadora;
-    let quadro = "parada";
-    if (!j.noChao) quadro = "pula";
-    else if (j.vx !== 0) quadro = (Math.floor(tempo / 120) % 2 === 0) ? "corre1" : "corre2";
+    let quadro;
+    if (!j.noChao) quadro = j.vy < 0 ? "pula" : "cai";
+    else if (j.vx !== 0) quadro = "corre" + (Math.floor(tempo / 90) % 4 + 1);
+    else quadro = (Math.floor(tempo / 700) % 2 === 0) ? "parada" : "parada2";
     const spr = Sprites.heroina[quadro][j.dir >= 0 ? "dir" : "esq"];
-    ctx.drawImage(spr, Math.round(j.x - camX - 4), Math.round(j.y - 2));
+
+    // sombra elíptica no chão sob a personagem
+    if (j.noChao) {
+      ctx.fillStyle = "rgba(0,0,0,.22)";
+      ctx.beginPath();
+      ctx.ellipse(j.x - camX + j.w / 2, j.y + j.h + 2, 12, 3.5, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    // sprite maior que a hitbox, ancorado nos pés
+    ctx.drawImage(spr, Math.round(j.x - camX + j.w / 2 - spr.width / 2), Math.round(j.y + j.h - spr.height));
   }
 
   // ---- ciclo ----

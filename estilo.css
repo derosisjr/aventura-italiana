@@ -58,11 +58,14 @@ body {
   display: flex; justify-content: center; align-items: center; gap: 16px;
   margin-top: 10px; font-size: 1.02rem; font-weight: 700;
 }
-.chip-conquistas {
-  font-size: 1.05rem; border: none; cursor: pointer;
+.chip {
+  font: inherit; font-size: .82rem; font-weight: 700; border: none; cursor: pointer;
   background: rgba(253,246,227,.16); color: var(--creme);
-  padding: 5px 12px; border-radius: 999px;
+  padding: 6px 12px; border-radius: 999px;
 }
+.chip:active { transform: scale(.95); }
+.chip .badge { color: var(--dourado); }
+.chips-extras { display: flex; justify-content: center; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
 
 #mapa-italia {
   position: relative;
@@ -158,18 +161,99 @@ body {
 .btn-pulo { width: 76px; height: 76px; }
 @media (hover: hover) and (pointer: fine) { #controles-toque { display: none; } }
 
-/* No celular em pé a fase fica estreita — pede paisagem */
-#aviso-girar {
+/* No celular em pé os jogos de rolagem lateral ficam estreitos — pede paisagem */
+.aviso-girar {
   display: none; position: absolute; inset: 0; z-index: 10;
   background: rgba(20, 40, 30, .92); color: var(--creme);
   flex-direction: column; align-items: center; justify-content: center;
   gap: 12px; text-align: center; padding: 24px; font-size: 1.1rem; font-weight: 600;
 }
-#aviso-girar .gira { font-size: 3rem; animation: girar 1.6s ease-in-out infinite; }
+.aviso-girar .gira { font-size: 3rem; animation: girar 1.6s ease-in-out infinite; }
 @keyframes girar { 0%, 20% { transform: rotate(0); } 60%, 100% { transform: rotate(90deg); } }
 @media (orientation: portrait) and (pointer: coarse) {
-  #tela-fase.ativa #aviso-girar { display: flex; }
+  .tela.ativa .aviso-girar { display: flex; }
 }
+
+/* ===== Tênis (quadra vertical — funciona em pé) ===== */
+#tela-tenis {
+  background: linear-gradient(180deg, #83402b, #6e3522);
+  align-items: center;
+}
+#tela-tenis .hud { position: static; padding: max(10px, env(safe-area-inset-top)) 12px 4px; width: 100%; }
+.tenis-placar { font-size: 1.2rem; letter-spacing: 2px; }
+.tenis-envelope { flex: 1; display: flex; align-items: center; justify-content: center; min-height: 0; width: 100%; }
+#canvas-tenis {
+  height: 100%; max-height: 78vh; aspect-ratio: 3 / 5;
+  max-width: 94vw; border-radius: 12px; box-shadow: var(--sombra);
+  touch-action: none;
+}
+.dica-toque {
+  text-align: center; font-size: .8rem; opacity: .8;
+  padding: 6px 16px max(12px, env(safe-area-inset-bottom));
+}
+
+/* ===== Vespa Run ===== */
+#tela-vespa { background: #8fd3f0; }
+#canvas-vespa {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  image-rendering: pixelated; touch-action: none;
+}
+.dica-vespa {
+  position: absolute; left: 0; right: 0;
+  bottom: max(8px, env(safe-area-inset-bottom));
+  color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,.6); pointer-events: none;
+}
+
+/* ===== Caça-palavras ===== */
+.palavras-grade {
+  display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px;
+  margin: 10px 0; touch-action: none;
+}
+.letra {
+  aspect-ratio: 1; border: none; border-radius: 8px;
+  font: inherit; font-weight: 800; font-size: clamp(.9rem, 4.2vw, 1.2rem);
+  background: #fff; color: var(--tinta); border: 2px solid #d8cfae;
+  cursor: pointer; touch-action: none;
+}
+.letra.selecionada { background: #fdeaa8; border-color: var(--dourado); }
+.letra.achada { background: #d4efdf; border-color: var(--verde-claro); }
+.palavras-lista { text-align: center; font-size: .88rem; line-height: 2; }
+.palavra {
+  display: inline-block; background: #f2ecd9; border-radius: 999px;
+  padding: 2px 10px; margin: 2px; font-weight: 700;
+}
+.palavra.riscada { text-decoration: line-through; opacity: .45; }
+
+/* ===== Álbum ===== */
+.painel-album { max-height: 94vh; }
+.album-compra { text-align: center; margin: 8px 0 4px; }
+.pacotinho-resultado {
+  display: flex; justify-content: center; gap: 8px; flex-wrap: wrap;
+  min-height: 10px; margin-top: 10px;
+}
+.fig-sorteada {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 10px 12px; border-radius: 12px; min-width: 84px;
+  animation: surge .35s ease-out backwards;
+}
+.fig-sorteada:nth-child(2) { animation-delay: .15s; }
+.fig-sorteada:nth-child(3) { animation-delay: .3s; }
+@keyframes surge { from { transform: scale(.4); opacity: 0; } }
+.colecao h3 { margin: 14px 4px 6px; font-size: .95rem; }
+.colecao h3 small { opacity: .6; font-weight: 600; }
+.colecao-grade { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.fig {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 8px 2px; border-radius: 10px; text-align: center;
+}
+.fig-emoji { font-size: 1.5rem; }
+.fig-nome { font-size: .58rem; font-weight: 700; line-height: 1.15; }
+.fig-tag { font-size: .62rem; font-weight: 800; color: var(--vermelho); }
+.raridade-1 { background: #f2ecd9; border: 2px solid #d8cfae; }
+.raridade-2 { background: #e8f0fb; border: 2px solid #7fa8d9; }
+.raridade-3 { background: #fdf3d0; border: 2px solid var(--dourado); box-shadow: 0 0 8px rgba(241,196,15,.5); }
+.fig.falta { filter: grayscale(1); opacity: .5; box-shadow: none; }
+.fig-sorteada.repetida { opacity: .7; }
 
 /* ===== Quiz e Memória ===== */
 #tela-quiz, #tela-memoria {

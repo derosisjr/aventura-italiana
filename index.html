@@ -24,7 +24,12 @@
     <div class="placar">
       <span id="placar-estrelas">⭐ 0</span>
       <span id="placar-moedas">🪙 0</span>
-      <button id="btn-conquistas" class="chip-conquistas">🏆</button>
+      <button id="btn-conquistas" class="chip">🏆</button>
+    </div>
+    <div class="chips-extras">
+      <button id="btn-diario" class="chip">📅 Desafio do dia</button>
+      <button id="btn-maratona" class="chip">🏃 Maratona</button>
+      <button id="btn-album" class="chip">📖 Álbum</button>
     </div>
   </header>
 
@@ -127,13 +132,67 @@
     <span id="hud-moedas">🪙 0</span>
     <button id="btn-sair-fase" class="botao-hud">✕</button>
   </div>
-  <div id="aviso-girar"><span class="gira">📱</span>Gire o celular para jogar esta fase</div>
+  <div id="aviso-girar" class="aviso-girar"><span class="gira">📱</span>Gire o celular para jogar esta fase</div>
   <div id="controles-toque">
     <div class="pad-direcao">
       <button id="btn-esq" class="btn-toque">◀</button>
       <button id="btn-dir" class="btn-toque">▶</button>
     </div>
     <button id="btn-pulo" class="btn-toque btn-pulo">⬆</button>
+  </div>
+</div>
+
+<!-- ===== Tela: Tênis ===== -->
+<div id="tela-tenis" class="tela">
+  <div class="hud">
+    <span>🎾 Foro Itálico</span>
+    <span id="tenis-placar" class="tenis-placar">0 × 0</span>
+    <button id="btn-sair-tenis" class="botao-hud">✕</button>
+  </div>
+  <div class="tenis-envelope">
+    <canvas id="canvas-tenis"></canvas>
+  </div>
+  <p class="dica-toque">Arraste o dedo na quadra para mover a raquete · primeiro a 5</p>
+</div>
+
+<!-- ===== Tela: Vespa Run ===== -->
+<div id="tela-vespa" class="tela">
+  <canvas id="canvas-vespa"></canvas>
+  <div class="hud">
+    <span>🛵 Costa Amalfitana</span>
+    <span id="vespa-dist">0 m</span>
+    <button id="btn-sair-vespa" class="botao-hud">✕</button>
+  </div>
+  <div id="aviso-girar-vespa" class="aviso-girar"><span class="gira">📱</span>Gire o celular para pilotar a Vespa</div>
+  <p class="dica-toque dica-vespa">Toque na tela para pular (2 toques = pulo duplo)</p>
+</div>
+
+<!-- ===== Tela: Caça-palavras ===== -->
+<div id="tela-palavras" class="tela">
+  <div class="painel">
+    <div class="quiz-topo">
+      <span>🔤 Caça-palavras</span>
+      <span id="palavras-tempo">⏱️ 0:00</span>
+      <button id="btn-sair-palavras" class="botao-hud">✕</button>
+    </div>
+    <div id="palavras-grade" class="palavras-grade"></div>
+    <div id="palavras-lista" class="palavras-lista"></div>
+  </div>
+</div>
+
+<!-- ===== Tela: Álbum de figurinhas ===== -->
+<div id="tela-album" class="tela">
+  <div class="painel painel-album">
+    <div class="quiz-topo">
+      <span>📖 Álbum de Figurinhas</span>
+      <span id="album-moedas"></span>
+      <button id="btn-sair-album" class="botao-hud">✕</button>
+    </div>
+    <div class="album-compra">
+      <button id="btn-pacotinho" class="botao">🎁 Abrir pacotinho (30 🪙)</button>
+      <div id="pacotinho-resultado" class="pacotinho-resultado"></div>
+    </div>
+    <div id="album-colecoes"></div>
   </div>
 </div>
 
@@ -188,7 +247,13 @@
   </div>
 </div>
 
-<script src="dados/quiz.js"></script>
+<script src="dados/quiz-series.js"></script>
+<script src="dados/quiz-palmeiras.js"></script>
+<script src="dados/quiz-tenis.js"></script>
+<script src="dados/quiz-esportes.js"></script>
+<script src="dados/quiz-italia.js"></script>
+<script src="dados/palavras.js"></script>
+<script src="dados/figurinhas.js"></script>
 <script src="dados/fases.js"></script>
 <script src="js/save.js"></script>
 <script src="js/sprites.js"></script>
@@ -196,6 +261,10 @@
 <script src="js/plataforma.js"></script>
 <script src="js/quiz.js"></script>
 <script src="js/memoria.js"></script>
+<script src="js/tenis.js"></script>
+<script src="js/vespa.js"></script>
+<script src="js/palavras.js"></script>
+<script src="js/album.js"></script>
 <script src="js/mapa.js"></script>
 </body>
 </html>

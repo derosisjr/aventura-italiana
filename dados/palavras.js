@@ -1,0 +1,7 @@
+// Pools do caça-palavras — só palavras de até 8 letras, sem acento (grade 8×8).
+window.PALAVRAS = {
+  italia: ["GELATO", "VESPA", "PIZZA", "ROMA", "TREVI", "AMORE", "PASTA", "NONNA", "VENEZA", "TOSCANA", "LIMONE", "DOLCE", "BELLA", "PUGLIA", "TRULLI", "CAPRI", "NAPOLI", "VERONA", "SPRITZ", "BURRATA", "CANNOLI", "CIAO", "PESTO", "RISOTO", "TIBRE", "LACIO", "MILAO", "FORO", "PIAZZA", "DUOMO"],
+  series: ["FRIENDS", "DARK", "LOST", "OFFICE", "CROWN", "SHELBY", "DUNDER", "HAWKINS", "WINDEN", "LUMON", "NARCOS", "VECNA", "ELEVEN", "GILEAD", "SHERLOCK", "DEXTER", "OZARK", "SUITS", "EUFORIA", "WESTEROS"],
+  verdao: ["PORCO", "VERDAO", "ABEL", "MARCOS", "ADEMIR", "EVAIR", "ALLIANZ", "PALESTRA", "LEILA", "ENDRICK", "WEVERTON", "DERBY", "ACADEMIA", "VEIGA", "DUDU", "RIVALDO", "ZINHO", "GOMEZ"],
+  tenis: ["SAIBRO", "GRAMA", "ACE", "DEUCE", "GUGA", "NADAL", "FEDERER", "SLAM", "RAQUETE", "PNEU", "LOVE", "SINNER", "ALCARAZ", "SERENA"]
+};

@@ -1,5 +1,10 @@
-// Minigame de quiz: sorteia perguntas dos bancos sem repetir na rodada,
-// com progressão de dificuldade (começa fácil, termina difícil) e placar ✅/❌.
+// Motor do quiz v3.
+// - Sem repetição entre sessões: hash das perguntas sorteadas fica no Save (por tema);
+//   quando o banco esgota, o histórico daquele tema é zerado.
+// - Escada de dificuldade: a rodada é uma sequência de casas (25% d1 → 50% d2 → 25% d3);
+//   ACERTO avança uma casa, ERRO volta uma casa (a casa sempre traz pergunta nova).
+// - Modos: "normal" (nós da trilha), "diario" (semente do dia, determinístico) e
+//   "maratona" (sem fim, 3 vidas, dificuldade crescente).
 window.Quiz = (function () {
   const elTema = document.getElementById("quiz-tema");
   const elProg = document.getElementById("quiz-progresso");
@@ -8,62 +13,103 @@ window.Quiz = (function () {
   const elPergunta = document.getElementById("quiz-pergunta");
   const elOpcoes = document.getElementById("quiz-opcoes");
 
-  let perguntas = [], indice = 0, acertos = 0, erros = 0, streak = 0, melhorStreak = 0;
-  let aoTerminar = null;
+  let casas = [], posicao = 0, acertos = 0, erros = 0, streak = 0, melhorStreak = 0;
+  let respostas = 0, maxRespostas = 0, vidas = 0, modo = "normal";
+  let baralhos = null, aoTerminar = null, rngAtual = Math.random;
 
-  function embaralhar(arr) {
+  // ---- utilidades ----
+  function hash(texto) { // djb2
+    let h = 5381;
+    for (let i = 0; i < texto.length; i++) h = ((h << 5) + h + texto.charCodeAt(i)) >>> 0;
+    return h.toString(36);
+  }
+
+  function mulberry32(semente) {
+    return function () {
+      semente |= 0; semente = (semente + 0x6D2B79F5) | 0;
+      let t = Math.imul(semente ^ (semente >>> 15), 1 | semente);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  function embaralhar(arr, rng) {
     const a = arr.slice();
     for (let i = a.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
+      const j = Math.floor(rng() * (i + 1));
       [a[i], a[j]] = [a[j], a[i]];
     }
     return a;
   }
 
-  // Sorteia n perguntas equilibrando dificuldades e devolve em ordem crescente
-  // de dificuldade — a rodada esquenta aos poucos.
-  function montarRodada(config) {
-    let banco = [];
-    for (const tema of config.temas) banco = banco.concat(window.QUIZ[tema] || []);
-    banco = banco.filter(q => q.d >= (config.dificuldadeMin || 1) && q.d <= (config.dificuldadeMax || 3));
-
-    const porNivel = { 1: [], 2: [], 3: [] };
-    banco.forEach(q => porNivel[q.d].push(q));
-    for (const n in porNivel) porNivel[n] = embaralhar(porNivel[n]);
-
-    const alvo = config.n || 8;
-    const niveis = [1, 2, 3].filter(n => porNivel[n].length);
-    const escolhidas = [];
-    // reparte igualmente entre os níveis disponíveis; sobras vão pro nível mais cheio
-    let restante = alvo;
-    niveis.forEach((n, i) => {
-      const cota = Math.min(porNivel[n].length, Math.ceil(restante / (niveis.length - i)));
-      escolhidas.push(...porNivel[n].splice(0, cota));
-      restante -= cota;
-    });
-    // completa se algum nível não tinha perguntas suficientes
-    while (restante > 0) {
-      const sobra = niveis.map(n => porNivel[n]).find(l => l.length);
-      if (!sobra) break;
-      escolhidas.push(sobra.shift());
-      restante--;
+  // ---- baralhos por dificuldade (com anti-repetição) ----
+  function montarBaralhos(temas, ignorarUsadas, rng) {
+    const decks = { 1: [], 2: [], 3: [] };
+    for (const tema of temas) {
+      const banco = window.QUIZ[tema] || [];
+      let usadas = ignorarUsadas ? [] : Save.usadas(tema);
+      // se quase tudo já foi usado, recomeça o ciclo desse tema
+      if (!ignorarUsadas && usadas.length >= banco.length * 0.8) {
+        Save.zerarUsadas(tema);
+        usadas = [];
+      }
+      for (const q of banco) {
+        const item = { q, tema, h: hash(q.p), usada: usadas.includes(hash(q.p)) };
+        decks[q.d].push(item);
+      }
     }
-    return escolhidas.sort((a, b) => a.d - b.d);
+    // inéditas primeiro (embaralhadas), depois as usadas (embaralhadas)
+    for (const n of [1, 2, 3]) {
+      const novas = embaralhar(decks[n].filter(i => !i.usada), rng);
+      const velhas = embaralhar(decks[n].filter(i => i.usada), rng);
+      decks[n] = novas.concat(velhas);
+    }
+    return decks;
   }
 
+  function puxar(dificuldade) {
+    // pega do baralho da dificuldade pedida; se esgotar, desce/sobe de nível
+    for (const d of [dificuldade, dificuldade + 1, dificuldade - 1, 1, 2, 3]) {
+      if (baralhos[d] && baralhos[d].length) {
+        const item = baralhos[d].shift();
+        if (modo === "normal") Save.marcarUsadas(item.tema, [item.h]);
+        return item.q;
+      }
+    }
+    return null;
+  }
+
+  // ---- escada ----
+  function montarCasas(n, mistura) {
+    // mistura = [fração d1, fração d2, fração d3]
+    const m = mistura || [0.25, 0.5, 0.25];
+    const q1 = Math.round(n * m[0]), q3 = Math.round(n * m[2]);
+    const q2 = n - q1 - q3;
+    return [].concat(Array(q1).fill(1), Array(q2).fill(2), Array(q3).fill(3));
+  }
+
+  // ---- interface ----
   function atualizarPlacar() {
-    elPlacar.textContent = "✅ " + acertos + "  ❌ " + erros;
+    let extra = "";
+    if (modo === "maratona") extra = "  " + "❤️".repeat(vidas);
+    elPlacar.textContent = "✅ " + acertos + "  ❌ " + erros + extra;
   }
 
   function mostrarPergunta() {
-    const q = perguntas[indice];
-    elProg.textContent = (indice + 1) + " / " + perguntas.length + " · " + "🌶️".repeat(q.d);
+    const dif = modo === "maratona"
+      ? (posicao < 5 ? 1 : posicao < 12 ? 2 : 3)
+      : casas[posicao];
+    const q = puxar(dif);
+    if (!q) { terminar(); return; }
+
+    elProg.textContent = (modo === "maratona")
+      ? "pergunta " + (respostas + 1) + " · " + "🌶️".repeat(dif)
+      : "casa " + (posicao + 1) + " / " + casas.length + " · " + "🌶️".repeat(dif);
     elStreak.textContent = streak >= 2 ? "🔥 " + streak + " seguidas!" : "";
     elPergunta.textContent = q.p;
     elOpcoes.innerHTML = "";
 
-    // embaralha as opções preservando qual é a certa
-    const ordem = embaralhar(q.ops.map((texto, i) => ({ texto, certa: i === q.r })));
+    const ordem = embaralhar(q.ops.map((texto, i) => ({ texto, certa: i === q.r })), rngAtual);
     ordem.forEach(op => {
       const btn = document.createElement("button");
       btn.className = "quiz-opcao";
@@ -74,47 +120,65 @@ window.Quiz = (function () {
   }
 
   function responder(btn, certa, ordem) {
-    const botoes = elOpcoes.querySelectorAll("button");
-    botoes.forEach((b, i) => {
+    elOpcoes.querySelectorAll("button").forEach((b, i) => {
       b.disabled = true;
       if (ordem[i].certa) b.classList.add("certa");
     });
+    respostas++;
     if (certa) {
       acertos++; streak++;
       melhorStreak = Math.max(melhorStreak, streak);
+      posicao++;
     } else {
-      erros++;
+      erros++; streak = 0;
       btn.classList.add("errada");
-      streak = 0;
+      if (modo === "maratona") {
+        vidas--;
+      } else {
+        posicao = Math.max(0, posicao - 1); // errou: volta uma casa
+        elStreak.textContent = "↩️ voltou uma casa!";
+      }
     }
     atualizarPlacar();
-    setTimeout(avancar, certa ? 700 : 1400);
+
+    const acabou = (modo === "maratona")
+      ? vidas <= 0
+      : posicao >= casas.length || respostas >= maxRespostas;
+    setTimeout(acabou ? terminar : mostrarPergunta, certa ? 700 : 1500);
   }
 
-  function avancar() {
-    indice++;
-    if (indice < perguntas.length) { mostrarPergunta(); return; }
-
-    const fracao = perguntas.length ? acertos / perguntas.length : 0;
+  function terminar() {
     let estrelas = 1;
-    if (fracao >= 0.6) estrelas = 2;
-    if (fracao >= 0.9) estrelas = 3;
+    if (modo !== "maratona") {
+      const completou = posicao >= casas.length;
+      if (completou && erros <= 1) estrelas = 3;
+      else if (completou && erros <= 3) estrelas = 2;
+    }
     if (aoTerminar) aoTerminar({
       estrelas,
       moedas: acertos * 2,
       pontuacao: acertos,
-      perfeito: acertos === perguntas.length,
+      acertos, erros,
+      perfeito: erros === 0 && posicao >= casas.length,
       texto: "✅ " + acertos + " · ❌ " + erros +
              (melhorStreak >= 3 ? " — melhor sequência: " + melhorStreak + " 🔥" : "") + "."
     });
   }
 
   return {
+    // config: { nome, temas[], n, mistura?, modo?, seed? }
     iniciar(config, callback) {
       aoTerminar = callback;
+      modo = config.modo || "normal";
+      rngAtual = (modo === "diario") ? mulberry32(config.seed) : Math.random;
+
       elTema.textContent = config.nome || "Quiz";
-      perguntas = montarRodada(config);
-      indice = 0; acertos = 0; erros = 0; streak = 0; melhorStreak = 0;
+      baralhos = montarBaralhos(config.temas, modo !== "normal", rngAtual);
+      casas = montarCasas(config.n || 12, config.mistura);
+      posicao = 0; acertos = 0; erros = 0; streak = 0; melhorStreak = 0;
+      respostas = 0;
+      maxRespostas = (config.n || 12) * 2 + 2;
+      vidas = 3;
       atualizarPlacar();
       mostrarPergunta();
     }

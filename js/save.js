@@ -1,9 +1,17 @@
-// Progresso em localStorage — nós concluídos, estrelas, moedas, recordes.
+// Progresso em localStorage — nós, estrelas, moedas, perguntas usadas,
+// figurinhas, desafio diário, maratona e recordes de minigames.
 window.Save = (function () {
   const CHAVE = "aventura-italiana-v1";
 
   function padrao() {
-    return { nos: {}, moedas: 0, conquistas: [] };
+    return {
+      nos: {}, moedas: 0, conquistas: [],
+      usadas: {},                                   // tema -> [hashes de perguntas já sorteadas]
+      figurinhas: [],                               // ids no álbum
+      diario: { ultimaData: "", streak: 0, recorde: 0 },
+      maratona: { recorde: 0 },
+      recordes: {}                                  // ex.: { tenis: 5, vespa: 1240 }
+    };
   }
 
   function carregar() {
@@ -38,8 +46,55 @@ window.Save = (function () {
       gravar();
     },
 
+    ganharMoedas(n) { dados.moedas += n; gravar(); },
+    gastar(n) {
+      if (dados.moedas < n) return false;
+      dados.moedas -= n; gravar(); return true;
+    },
+
     totalEstrelas() {
       return Object.values(dados.nos).reduce((s, n) => s + (n.estrelas || 0), 0);
+    },
+
+    // ---- perguntas já usadas (anti-repetição entre sessões) ----
+    usadas(tema) { return dados.usadas[tema] || []; },
+    marcarUsadas(tema, hashes) {
+      dados.usadas[tema] = (dados.usadas[tema] || []).concat(hashes);
+      gravar();
+    },
+    zerarUsadas(tema) { dados.usadas[tema] = []; gravar(); },
+
+    // ---- figurinhas ----
+    get figurinhas() { return dados.figurinhas; },
+    temFigurinha(id) { return dados.figurinhas.includes(id); },
+    darFigurinha(id) {
+      if (dados.figurinhas.includes(id)) return false;
+      dados.figurinhas.push(id); gravar(); return true;
+    },
+
+    // ---- desafio diário ----
+    get diario() { return dados.diario; },
+    registrarDiario(data, acertos) {
+      const d = dados.diario;
+      const ontem = new Date(Date.now() - 864e5).toISOString().slice(0, 10);
+      d.streak = (d.ultimaData === ontem) ? d.streak + 1 : 1;
+      d.ultimaData = data;
+      d.recorde = Math.max(d.recorde, acertos);
+      gravar();
+    },
+
+    // ---- maratona e recordes de minigames ----
+    get maratona() { return dados.maratona; },
+    registrarMaratona(acertos) {
+      dados.maratona.recorde = Math.max(dados.maratona.recorde, acertos);
+      gravar();
+    },
+    recorde(jogo) { return dados.recordes[jogo] || 0; },
+    registrarRecorde(jogo, valor) {
+      if (valor > (dados.recordes[jogo] || 0)) {
+        dados.recordes[jogo] = valor; gravar(); return true;
+      }
+      return false;
     },
 
     temConquista(id) { return dados.conquistas.includes(id); },
