@@ -1,0 +1,179 @@
+/* Aventura Italiana — mobile-first, sem build */
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+:root {
+  --verde: #1a5c3a;
+  --verde-claro: #2e8b57;
+  --vermelho: #c0392b;
+  --creme: #fdf6e3;
+  --dourado: #f1c40f;
+  --tinta: #2c3e50;
+  --sombra: 0 4px 14px rgba(0,0,0,.25);
+}
+
+html, body { height: 100%; overflow: hidden; }
+body {
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  background: var(--verde);
+  color: var(--creme);
+  user-select: none; -webkit-user-select: none;
+  touch-action: manipulation;
+}
+
+/* ===== Telas ===== */
+.tela { display: none; position: fixed; inset: 0; }
+.tela.ativa { display: flex; flex-direction: column; }
+
+/* ===== Mapa ===== */
+#tela-mapa {
+  background: linear-gradient(180deg, #14532d 0%, #1a5c3a 40%, #2e8b57 100%);
+  overflow-y: auto; overflow-x: hidden;
+}
+.mapa-topo { text-align: center; padding: max(16px, env(safe-area-inset-top)) 16px 8px; }
+.mapa-topo h1 {
+  font-size: 1.7rem; letter-spacing: .5px;
+  background: linear-gradient(90deg, #2e8b57 0 33%, #fdf6e3 33% 66%, #c0392b 66%);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 2px 2px rgba(0,0,0,.4));
+}
+.mapa-sub { color: var(--dourado); font-size: .9rem; margin-top: 2px; }
+.placar { display: flex; justify-content: center; gap: 18px; margin-top: 10px; font-size: 1.05rem; font-weight: 600; }
+
+.trilha {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  padding: 18px 0 24px; position: relative;
+}
+.no {
+  display: flex; align-items: center; gap: 14px;
+  width: min(320px, 86vw); margin: 7px 0; padding: 12px 16px;
+  background: rgba(253,246,227,.95); color: var(--tinta);
+  border: none; border-radius: 16px; box-shadow: var(--sombra);
+  font: inherit; text-align: left; cursor: pointer;
+  transition: transform .1s;
+}
+.no:active { transform: scale(.97); }
+.no.bloqueado { background: rgba(0,0,0,.28); color: rgba(253,246,227,.55); box-shadow: none; cursor: default; }
+.no .icone { font-size: 1.8rem; width: 44px; text-align: center; }
+.no .info { flex: 1; }
+.no .titulo { display: block; font-weight: 700; font-size: .98rem; }
+.no .detalhe { display: block; font-size: .78rem; opacity: .75; margin-top: 2px; }
+.no .estrelas { font-size: .85rem; letter-spacing: 1px; }
+.conector { width: 4px; height: 14px; background: rgba(253,246,227,.35); border-radius: 2px; }
+
+.mapa-rodape { text-align: center; padding: 8px 0 max(20px, env(safe-area-inset-bottom)); }
+
+/* ===== Botões ===== */
+.botao {
+  font: inherit; font-weight: 700; font-size: 1rem;
+  padding: 12px 26px; border: none; border-radius: 12px;
+  background: var(--dourado); color: var(--tinta);
+  box-shadow: var(--sombra); cursor: pointer;
+}
+.botao:active { transform: scale(.96); }
+.botao.secundario { background: rgba(253,246,227,.2); color: var(--creme); }
+.botao-hud {
+  background: rgba(0,0,0,.35); color: #fff; border: none;
+  width: 34px; height: 34px; border-radius: 50%;
+  font-size: 1rem; cursor: pointer; flex: none;
+}
+
+/* ===== Fase (canvas) ===== */
+#tela-fase { background: #7ec8e3; }
+#canvas-jogo {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  image-rendering: pixelated; image-rendering: crisp-edges;
+  touch-action: none;
+}
+.hud {
+  position: absolute; top: max(10px, env(safe-area-inset-top)); left: 12px; right: 12px;
+  display: flex; align-items: center; gap: 12px;
+  font-weight: 700; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,.6);
+}
+#hud-nome { flex: 1; font-size: .95rem; }
+#controles-toque {
+  position: absolute; left: 0; right: 0;
+  bottom: max(14px, env(safe-area-inset-bottom));
+  display: flex; justify-content: space-between; align-items: flex-end;
+  padding: 0 18px; pointer-events: none;
+}
+.pad-direcao { display: flex; gap: 12px; }
+.btn-toque {
+  pointer-events: auto;
+  width: 64px; height: 64px; border-radius: 50%;
+  border: none; font-size: 1.6rem;
+  background: rgba(0,0,0,.32); color: rgba(255,255,255,.92);
+  touch-action: none;
+}
+.btn-toque:active, .btn-toque.apertado { background: rgba(241,196,15,.55); }
+.btn-pulo { width: 76px; height: 76px; }
+@media (hover: hover) and (pointer: fine) { #controles-toque { display: none; } }
+
+/* No celular em pé a fase fica estreita — pede paisagem */
+#aviso-girar {
+  display: none; position: absolute; inset: 0; z-index: 10;
+  background: rgba(20, 40, 30, .92); color: var(--creme);
+  flex-direction: column; align-items: center; justify-content: center;
+  gap: 12px; text-align: center; padding: 24px; font-size: 1.1rem; font-weight: 600;
+}
+#aviso-girar .gira { font-size: 3rem; animation: girar 1.6s ease-in-out infinite; }
+@keyframes girar { 0%, 20% { transform: rotate(0); } 60%, 100% { transform: rotate(90deg); } }
+@media (orientation: portrait) and (pointer: coarse) {
+  #tela-fase.ativa #aviso-girar { display: flex; }
+}
+
+/* ===== Quiz e Memória ===== */
+#tela-quiz, #tela-memoria {
+  background: linear-gradient(180deg, #14532d, #1a5c3a);
+  align-items: center; justify-content: center; padding: 16px;
+}
+.painel {
+  width: min(440px, 100%); max-height: 92vh; overflow-y: auto;
+  background: var(--creme); color: var(--tinta);
+  border-radius: 20px; padding: 18px; box-shadow: var(--sombra);
+}
+.quiz-topo {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  font-weight: 700; font-size: .95rem; margin-bottom: 8px;
+}
+.quiz-streak { min-height: 20px; font-size: .85rem; color: var(--vermelho); font-weight: 700; text-align: center; }
+.quiz-pergunta { font-size: 1.1rem; font-weight: 600; margin: 10px 4px 16px; line-height: 1.45; }
+.quiz-opcoes { display: flex; flex-direction: column; gap: 10px; }
+.quiz-opcao {
+  font: inherit; font-size: .98rem; text-align: left;
+  padding: 13px 15px; border-radius: 12px; cursor: pointer;
+  border: 2px solid #d8cfae; background: #fff; color: var(--tinta);
+}
+.quiz-opcao.certa { background: #d4efdf; border-color: var(--verde-claro); font-weight: 700; }
+.quiz-opcao.errada { background: #fadbd8; border-color: var(--vermelho); }
+.quiz-opcao:disabled { cursor: default; opacity: .95; }
+
+/* Memória */
+.memoria-grade { display: grid; gap: 8px; margin-top: 10px; }
+.carta {
+  aspect-ratio: 3/4; border: none; border-radius: 10px;
+  font-size: clamp(1.4rem, 7vw, 2.2rem);
+  background: var(--verde-claro); color: transparent;
+  cursor: pointer; transition: transform .18s, background .18s;
+  box-shadow: 0 2px 5px rgba(0,0,0,.2);
+}
+.carta.virada { background: #fff; color: inherit; transform: rotateY(180deg); }
+.carta.achada { background: #d4efdf; color: inherit; cursor: default; }
+
+/* ===== Modais ===== */
+.modal {
+  display: none; position: fixed; inset: 0; z-index: 50;
+  background: rgba(0,0,0,.55);
+  align-items: center; justify-content: center; padding: 20px;
+}
+.modal.ativa { display: flex; }
+.modal-caixa {
+  width: min(380px, 100%); background: var(--creme); color: var(--tinta);
+  border-radius: 20px; padding: 24px; text-align: center; box-shadow: var(--sombra);
+}
+.modal-caixa h2 { margin-bottom: 8px; }
+.resultado-estrelas { font-size: 2.2rem; letter-spacing: 6px; margin: 10px 0; }
+.modal-botoes { display: flex; gap: 10px; justify-content: center; margin-top: 18px; flex-wrap: wrap; }
+.lista-conquistas { list-style: none; text-align: left; max-height: 50vh; overflow-y: auto; }
+.lista-conquistas li { padding: 8px 4px; border-bottom: 1px solid #e8dfc0; font-size: .95rem; }
+.lista-conquistas li.pendente { opacity: .45; }

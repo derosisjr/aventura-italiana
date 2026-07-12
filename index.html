@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#1a5c3a">
+<title>Aventura Italiana</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8D%95%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="estilo.css">
+</head>
+<body>
+
+<!-- ===== Tela: Mapa de progressão ===== -->
+<div id="tela-mapa" class="tela ativa">
+  <header class="mapa-topo">
+    <h1>Aventura Italiana</h1>
+    <p class="mapa-sub">Mundo 1 · Roma</p>
+    <div class="placar">
+      <span id="placar-estrelas">⭐ 0</span>
+      <span id="placar-moedas">🪙 0</span>
+    </div>
+  </header>
+  <div id="trilha" class="trilha"></div>
+  <footer class="mapa-rodape">
+    <button id="btn-conquistas" class="botao secundario">🏆 Conquistas</button>
+  </footer>
+</div>
+
+<!-- ===== Tela: Fase de plataforma ===== -->
+<div id="tela-fase" class="tela">
+  <canvas id="canvas-jogo"></canvas>
+  <div id="hud-fase" class="hud">
+    <span id="hud-nome"></span>
+    <span id="hud-moedas">🪙 0</span>
+    <button id="btn-sair-fase" class="botao-hud">✕</button>
+  </div>
+  <div id="aviso-girar"><span class="gira">📱</span>Gire o celular para jogar esta fase</div>
+  <div id="controles-toque">
+    <div class="pad-direcao">
+      <button id="btn-esq" class="btn-toque">◀</button>
+      <button id="btn-dir" class="btn-toque">▶</button>
+    </div>
+    <button id="btn-pulo" class="btn-toque btn-pulo">⬆</button>
+  </div>
+</div>
+
+<!-- ===== Tela: Quiz ===== -->
+<div id="tela-quiz" class="tela">
+  <div class="painel">
+    <div class="quiz-topo">
+      <span id="quiz-tema"></span>
+      <span id="quiz-progresso"></span>
+      <button id="btn-sair-quiz" class="botao-hud">✕</button>
+    </div>
+    <div id="quiz-streak" class="quiz-streak"></div>
+    <p id="quiz-pergunta" class="quiz-pergunta"></p>
+    <div id="quiz-opcoes" class="quiz-opcoes"></div>
+  </div>
+</div>
+
+<!-- ===== Tela: Jogo da memória ===== -->
+<div id="tela-memoria" class="tela">
+  <div class="painel">
+    <div class="quiz-topo">
+      <span>🧠 Memória</span>
+      <span id="memoria-tentativas"></span>
+      <button id="btn-sair-memoria" class="botao-hud">✕</button>
+    </div>
+    <div id="memoria-grade" class="memoria-grade"></div>
+  </div>
+</div>
+
+<!-- ===== Modal: resultado do nó ===== -->
+<div id="modal-resultado" class="modal">
+  <div class="modal-caixa">
+    <h2 id="resultado-titulo"></h2>
+    <div id="resultado-estrelas" class="resultado-estrelas"></div>
+    <p id="resultado-texto"></p>
+    <div class="modal-botoes">
+      <button id="btn-rejogar" class="botao secundario">Jogar de novo</button>
+      <button id="btn-continuar" class="botao">Continuar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Modal: conquistas ===== -->
+<div id="modal-conquistas" class="modal">
+  <div class="modal-caixa">
+    <h2>🏆 Conquistas</h2>
+    <ul id="lista-conquistas" class="lista-conquistas"></ul>
+    <div class="modal-botoes">
+      <button id="btn-fechar-conquistas" class="botao">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<script src="dados/quiz.js"></script>
+<script src="dados/fases.js"></script>
+<script src="js/save.js"></script>
+<script src="js/sprites.js"></script>
+<script src="js/toque.js"></script>
+<script src="js/plataforma.js"></script>
+<script src="js/quiz.js"></script>
+<script src="js/memoria.js"></script>
+<script src="js/mapa.js"></script>
+</body>
+</html>
