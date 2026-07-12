@@ -1,8 +1,10 @@
-# Aventura Italiana 🍕
+# Sthefanie Italian Adventure 🍕
 
-Jogo de navegador (feito para celular) que mistura fases de plataforma ambientadas em Roma
-com quizzes (séries, Palmeiras, tênis, Itália) e jogo da memória, numa trilha de progressão
-com estrelas, moedas e conquistas.
+Jogo de navegador (feito para celular): hub em mapa da Itália estilo Mario, fases de
+plataforma ambientadas em Roma — cada uma com cenário e mecânica próprios (plataformas que
+desmoronam, jatos d'água, colunas móveis, nuvens que piscam) e pulo duplo — intercaladas com
+quizzes (séries, Palmeiras, tênis+esportes, Itália; ~150 perguntas com progressão de
+dificuldade e placar ✅/❌) e jogo da memória, numa trilha com estrelas, moedas e conquistas.
 
 **Stack:** HTML/CSS/JS vanilla + Canvas — sem build, sem dependências. Progresso salvo em
 `localStorage`. Hospedado no GitHub Pages.
@@ -34,6 +36,8 @@ js/mapa.js         # trilha de progressão, conquistas e costura das telas
 
 ## Expandir
 
-- **Nova fase:** acrescente um mapa em `dados/fases.js` e um nó em `NOS` (`js/mapa.js`).
-- **Novo mundo (Puglia, Sardenha…):** só acrescentar nós — a trilha e o save já suportam.
+- **Nova fase:** acrescente um mapa em `dados/fases.js` (legenda das mecânicas no topo) e um
+  nó com `pos` em `NOS` (`js/mapa.js` — coordenadas no viewBox 400×640 do mapa da Itália).
+- **Novo mundo:** os marcadores "Mundo 2" (Sardenha) e "Mundo 3" (Sicília) já estão no mapa;
+  a trilha e o save suportam nós novos sem refatorar.
 - **Mais perguntas:** edite `dados/quiz.js` (formato comentado no topo).

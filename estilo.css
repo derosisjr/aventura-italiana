@@ -1,7 +1,8 @@
-/* Aventura Italiana — mobile-first, sem build */
+/* Sthefanie Italian Adventure — mobile-first, sem build */
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
 :root {
+  --mar-escuro: #0e3a5c;
   --verde: #1a5c3a;
   --verde-claro: #2e8b57;
   --vermelho: #c0392b;
@@ -14,7 +15,7 @@
 html, body { height: 100%; overflow: hidden; }
 body {
   font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
-  background: var(--verde);
+  background: var(--mar-escuro);
   color: var(--creme);
   user-select: none; -webkit-user-select: none;
   touch-action: manipulation;
@@ -24,44 +25,92 @@ body {
 .tela { display: none; position: fixed; inset: 0; }
 .tela.ativa { display: flex; flex-direction: column; }
 
-/* ===== Mapa ===== */
+/* ===== Hub: mapa da Itália ===== */
 #tela-mapa {
-  background: linear-gradient(180deg, #14532d 0%, #1a5c3a 40%, #2e8b57 100%);
+  background: linear-gradient(180deg, #0b2c45 0%, #0e3a5c 30%, #17557e 100%);
   overflow-y: auto; overflow-x: hidden;
+  align-items: center;
 }
-.mapa-topo { text-align: center; padding: max(16px, env(safe-area-inset-top)) 16px 8px; }
-.mapa-topo h1 {
-  font-size: 1.7rem; letter-spacing: .5px;
-  background: linear-gradient(90deg, #2e8b57 0 33%, #fdf6e3 33% 66%, #c0392b 66%);
-  -webkit-background-clip: text; background-clip: text;
-  -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 2px 2px rgba(0,0,0,.4));
+.mapa-topo {
+  text-align: center;
+  padding: max(14px, env(safe-area-inset-top)) 16px 4px;
 }
-.mapa-sub { color: var(--dourado); font-size: .9rem; margin-top: 2px; }
-.placar { display: flex; justify-content: center; gap: 18px; margin-top: 10px; font-size: 1.05rem; font-weight: 600; }
+.titulo-jogo { line-height: 1; }
+.titulo-nome {
+  display: block;
+  font-family: "Caveat", cursive;
+  font-size: clamp(2.6rem, 11vw, 3.6rem);
+  color: var(--dourado);
+  text-shadow: 0 3px 0 rgba(0,0,0,.35);
+  transform: rotate(-3deg);
+}
+.titulo-resto {
+  display: block;
+  font-family: "Lilita One", "Segoe UI", sans-serif;
+  font-size: clamp(1.3rem, 6vw, 1.8rem);
+  letter-spacing: 2px;
+  margin-top: 2px;
+  text-transform: uppercase;
+}
+.titulo-resto i { font-style: normal; color: #7fd694; }
+.titulo-resto b { font-weight: normal; color: #f28b82; }
+.placar {
+  display: flex; justify-content: center; align-items: center; gap: 16px;
+  margin-top: 10px; font-size: 1.02rem; font-weight: 700;
+}
+.chip-conquistas {
+  font-size: 1.05rem; border: none; cursor: pointer;
+  background: rgba(253,246,227,.16); color: var(--creme);
+  padding: 5px 12px; border-radius: 999px;
+}
 
-.trilha {
-  flex: 1; display: flex; flex-direction: column; align-items: center;
-  padding: 18px 0 24px; position: relative;
+#mapa-italia {
+  position: relative;
+  width: min(430px, 96vw);
+  aspect-ratio: 400 / 640;
+  margin: 6px 0 4px;
+  flex: none;
 }
+#italia-svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+#nos-mapa { position: absolute; inset: 0; }
+
+/* nós da trilha sobre o mapa */
 .no {
-  display: flex; align-items: center; gap: 14px;
-  width: min(320px, 86vw); margin: 7px 0; padding: 12px 16px;
-  background: rgba(253,246,227,.95); color: var(--tinta);
-  border: none; border-radius: 16px; box-shadow: var(--sombra);
-  font: inherit; text-align: left; cursor: pointer;
-  transition: transform .1s;
+  position: absolute; transform: translate(-50%, -50%);
+  width: 52px; display: flex; flex-direction: column; align-items: center; gap: 1px;
+  border: none; background: none; cursor: pointer; font: inherit; color: var(--creme);
 }
-.no:active { transform: scale(.97); }
-.no.bloqueado { background: rgba(0,0,0,.28); color: rgba(253,246,227,.55); box-shadow: none; cursor: default; }
-.no .icone { font-size: 1.8rem; width: 44px; text-align: center; }
-.no .info { flex: 1; }
-.no .titulo { display: block; font-weight: 700; font-size: .98rem; }
-.no .detalhe { display: block; font-size: .78rem; opacity: .75; margin-top: 2px; }
-.no .estrelas { font-size: .85rem; letter-spacing: 1px; }
-.conector { width: 4px; height: 14px; background: rgba(253,246,227,.35); border-radius: 2px; }
+.no .bolha {
+  width: 46px; height: 46px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.35rem;
+  background: radial-gradient(circle at 30% 25%, #fffdf2, var(--creme) 60%, #e8d9a8);
+  border: 3px solid var(--dourado);
+  box-shadow: 0 4px 8px rgba(0,0,0,.4);
+  transition: transform .12s;
+}
+.no:active .bolha { transform: scale(.9); }
+.no.atual .bolha { animation: pulsa 1.4s ease-in-out infinite; border-color: #fff; }
+@keyframes pulsa {
+  0%, 100% { transform: scale(1); box-shadow: 0 4px 8px rgba(0,0,0,.4); }
+  50% { transform: scale(1.12); box-shadow: 0 0 18px rgba(241,196,15,.9); }
+}
+.no.bloqueado .bolha {
+  background: #5a6b74; border-color: #43525a; filter: grayscale(1);
+  font-size: 1.05rem; color: #c9d2d9;
+}
+.no.bloqueado { cursor: default; }
+.no .rotulo {
+  font-size: .6rem; font-weight: 700; text-align: center; line-height: 1.15;
+  text-shadow: 0 1px 3px rgba(0,0,0,.9), 0 0 6px rgba(0,0,0,.5);
+  max-width: 74px;
+}
+.no .estrelas { font-size: .55rem; letter-spacing: 1px; filter: drop-shadow(0 1px 1px rgba(0,0,0,.8)); }
 
-.mapa-rodape { text-align: center; padding: 8px 0 max(20px, env(safe-area-inset-bottom)); }
+.legenda-no {
+  min-height: 22px; font-size: .85rem; opacity: .85; text-align: center;
+  padding: 0 16px max(16px, env(safe-area-inset-bottom));
+}
 
 /* ===== Botões ===== */
 .botao {
@@ -71,7 +120,7 @@ body {
   box-shadow: var(--sombra); cursor: pointer;
 }
 .botao:active { transform: scale(.96); }
-.botao.secundario { background: rgba(253,246,227,.2); color: var(--creme); }
+.botao.secundario { background: rgba(44,62,80,.12); color: var(--tinta); }
 .botao-hud {
   background: rgba(0,0,0,.35); color: #fff; border: none;
   width: 34px; height: 34px; border-radius: 50%;
@@ -124,7 +173,7 @@ body {
 
 /* ===== Quiz e Memória ===== */
 #tela-quiz, #tela-memoria {
-  background: linear-gradient(180deg, #14532d, #1a5c3a);
+  background: linear-gradient(180deg, #0b2c45, #17557e);
   align-items: center; justify-content: center; padding: 16px;
 }
 .painel {
@@ -134,8 +183,9 @@ body {
 }
 .quiz-topo {
   display: flex; align-items: center; justify-content: space-between; gap: 8px;
-  font-weight: 700; font-size: .95rem; margin-bottom: 8px;
+  font-weight: 700; font-size: .9rem; margin-bottom: 8px; flex-wrap: wrap;
 }
+.quiz-placar { font-size: .85rem; background: #f2ecd9; padding: 3px 10px; border-radius: 999px; }
 .quiz-streak { min-height: 20px; font-size: .85rem; color: var(--vermelho); font-weight: 700; text-align: center; }
 .quiz-pergunta { font-size: 1.1rem; font-weight: 600; margin: 10px 4px 16px; line-height: 1.45; }
 .quiz-opcoes { display: flex; flex-direction: column; gap: 10px; }
